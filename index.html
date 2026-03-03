@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nathaniel 胡皓承 | VFX · 剪輯 · 繪圖</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;700&display=swap');
+:root{--bg:#050508;--accent:#7c3aed;--accent2:#06b6d4;--accent3:#f59e0b;--text:#e2e8f0;--muted:#64748b;--card:#111118;--border:rgba(124,58,237,0.2)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Space Grotesk','Noto Sans TC',sans-serif;overflow-x:hidden;cursor:none}
+#cursor{width:12px;height:12px;background:var(--accent);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s;mix-blend-mode:screen}
+#cursor-ring{width:36px;height:36px;border:1.5px solid rgba(124,58,237,.6);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all .18s ease}
+#particles{position:fixed;inset:0;z-index:0;pointer-events:none}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px}
+
+nav{position:fixed;top:0;width:100%;z-index:100;padding:20px 60px;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(20px);background:rgba(5,5,8,.7);border-bottom:1px solid rgba(124,58,237,.1);transition:all .3s}
+.nav-logo{font-size:1.1rem;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:.05em}
+.nav-links{display:flex;gap:36px;list-style:none}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;transition:color .2s;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--accent2);transition:width .3s}
+.nav-links a:hover{color:var(--text)}
+.nav-links a:hover::after{width:100%}
+
+#hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;z-index:2;padding:100px 40px 60px}
+.hero-inner{max-width:800px}
+.greeting{font-size:.85rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent2);margin-bottom:24px;opacity:0;animation:fadeUp .8s .2s forwards}
+.hero-name{font-size:clamp(3rem,9vw,7rem);font-weight:700;line-height:1.05;letter-spacing:-.03em;opacity:0;animation:fadeUp .9s .4s forwards}
+.hero-name .en{display:block}
+.hero-name .zh{display:block;font-size:.45em;background:linear-gradient(135deg,var(--accent),var(--accent2),var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:200% 200%;animation:gradShift 4s ease infinite}
+@keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.hero-roles{margin:28px 0;height:32px;overflow:hidden;opacity:0;animation:fadeUp .9s .6s forwards}
+.role-wrap{display:flex;flex-direction:column;animation:roleSlide 6s 1.5s infinite}
+.role-wrap span{height:32px;line-height:32px;font-size:1.1rem;color:var(--muted)}
+.role-wrap span b{color:var(--accent2);font-weight:600}
+@keyframes roleSlide{0%,28%{transform:translateY(0)}33%,61%{transform:translateY(-32px)}66%,94%{transform:translateY(-64px)}100%{transform:translateY(0)}}
+.hero-desc{max-width:520px;margin:0 auto 48px;color:var(--muted);line-height:1.8;font-size:1rem;opacity:0;animation:fadeUp .9s .8s forwards}
+.hero-cta{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;opacity:0;animation:fadeUp .9s 1s forwards}
+.btn{padding:14px 32px;border-radius:100px;font-size:.9rem;font-weight:600;letter-spacing:.05em;text-decoration:none;transition:all .3s;cursor:none;border:none;display:inline-block}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#9333ea);color:#fff;box-shadow:0 0 30px rgba(124,58,237,.4)}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 0 60px rgba(124,58,237,.8)}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border)}
+.btn-outline:hover{background:rgba(124,58,237,.1);border-color:var(--accent);transform:translateY(-3px)}
+.scroll-hint{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--muted);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;opacity:0;animation:fadeIn 1s 2.2s forwards}
+.scroll-line{width:1px;height:50px;background:linear-gradient(to bottom,var(--accent),transparent);animation:scrollPulse 2s ease infinite}
+@keyframes scrollPulse{0%,100%{transform:scaleY(1);opacity:1}50%{transform:scaleY(.4);opacity:.3}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{to{opacity:.5}}
+
+.sec{position:relative;z-index:2;padding:120px 60px;max-width:1200px;margin:0 auto}
+.section-label{font-size:.75rem;letter-spacing:.25em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.section-label::before{content:'';display:block;width:30px;height:1px;background:var(--accent)}
+.section-title{font-size:clamp(2rem,4vw,3rem);font-weight:700;letter-spacing:-.03em;margin-bottom:60px;line-height:1.1}
+.section-title span{background:linear-gradient(135deg,var(--accent2),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.glow-div{height:1px;background:linear-gradient(to right,transparent,var(--accent),transparent);opacity:.25;position:relative;z-index:2}
+
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.about-text p{color:var(--muted);line-height:1.9;margin-bottom:20px;font-size:1.05rem}
+.about-text p strong{color:var(--text)}
+.about-stats{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 24px;transition:all .3s;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(124,58,237,.07),transparent);opacity:0;transition:opacity .3s}
+.stat-card:hover{transform:translateY(-5px);border-color:var(--accent);box-shadow:0 20px 50px rgba(124,58,237,.15)}
+.stat-card:hover::before{opacity:1}
+.stat-num{font-size:2.5rem;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-label{color:var(--muted);font-size:.85rem;margin-top:6px}
+
+.skills-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+.skill-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;transition:all .3s}
+.skill-card:hover{transform:translateY(-6px);border-color:var(--accent);box-shadow:0 20px 60px rgba(124,58,237,.15)}
+.skill-icon{font-size:2rem;margin-bottom:16px}
+.skill-name{font-size:1.1rem;font-weight:600;margin-bottom:10px}
+.skill-desc{color:var(--muted);font-size:.9rem;line-height:1.7}
+.skill-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.tag{padding:4px 12px;border-radius:100px;font-size:.75rem;font-weight:500;background:rgba(124,58,237,.15);color:var(--accent);border:1px solid rgba(124,58,237,.25)}
+
+.works-tabs{display:flex;gap:8px;margin-bottom:48px;flex-wrap:wrap}
+.tab-btn{padding:10px 24px;border-radius:100px;font-size:.85rem;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:none;transition:all .25s}
+.tab-btn.active,.tab-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 0 20px rgba(124,58,237,.4)}
+.works-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px}
+.work-card{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;transition:all .3s;transform-style:preserve-3d}
+.work-card.hidden{display:none}
+.work-card:hover{box-shadow:0 30px 80px rgba(0,0,0,.5),0 0 0 1px var(--accent)}
+.work-thumb{width:100%;height:200px;display:flex;align-items:center;justify-content:center;font-size:3.5rem;position:relative;overflow:hidden}
+.work-thumb::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(124,58,237,.25),rgba(6,182,212,.12));opacity:0;transition:opacity .3s}
+.work-card:hover .work-thumb::after{opacity:1}
+.play-btn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s;background:rgba(0,0,0,.35);z-index:1}
+.play-btn svg{width:60px;height:60px;filter:drop-shadow(0 0 12px rgba(124,58,237,.8))}
+.work-card:hover .play-btn{opacity:1}
+.work-info{padding:20px 24px}
+.work-cat{font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent2);margin-bottom:8px}
+.work-title{font-weight:600;font-size:1rem;margin-bottom:10px}
+.work-link{display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-size:.85rem;text-decoration:none;transition:gap .2s;font-weight:500}
+.work-link:hover{gap:12px}
+
+.collab-list{display:flex;flex-direction:column;gap:16px}
+.collab-row{display:flex;align-items:center;gap:32px;flex-wrap:wrap;padding:36px 40px;background:var(--card);border:1px solid var(--border);border-radius:24px;transition:all .3s}
+.collab-row:hover{border-color:var(--accent);transform:translateX(10px);box-shadow:0 10px 40px rgba(124,58,237,.1)}
+.collab-logo{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,var(--accent),#9333ea);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;font-weight:700;color:#fff}
+.collab-info h3{font-size:1.1rem;font-weight:600;margin-bottom:8px}
+.collab-info p{color:var(--muted);font-size:.9rem;line-height:1.7}
+
+.contact-glow{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:700px;height:350px;background:radial-gradient(ellipse,rgba(124,58,237,.12),transparent 70%);pointer-events:none}
+.contact-links{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:48px}
+.contact-link{display:flex;align-items:center;gap:10px;padding:16px 28px;border-radius:14px;background:var(--card);border:1px solid var(--border);color:var(--text);text-decoration:none;font-size:.9rem;font-weight:500;transition:all .3s}
+.contact-link:hover{transform:translateY(-5px);border-color:var(--accent);box-shadow:0 16px 40px rgba(124,58,237,.2)}
+.contact-link svg{width:20px;height:20px;flex-shrink:0}
+
+footer{text-align:center;padding:40px;color:var(--muted);font-size:.8rem;border-top:1px solid rgba(124,58,237,.1);position:relative;z-index:2}
+
+.reveal{opacity:0;transform:translateY(40px);transition:opacity .8s,transform .8s}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+@media(max-width:900px){nav{padding:16px 24px}.nav-links{display:none}.sec{padding:80px 24px}.about-grid{grid-template-columns:1fr;gap:48px}.works-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<canvas id="particles"></canvas>
+
+<nav id="navbar">
+  <div class="nav-logo">N · H</div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#works">Works</a></li>
+    <li><a href="#collab">Collab</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-inner">
+    <p class="greeting">✦ Available for Freelance</p>
+    <h1 class="hero-name">
+      <span class="en">Nathaniel</span>
+      <span class="zh">胡皓承</span>
+    </h1>
+    <div class="hero-roles">
+      <div class="role-wrap">
+        <span>VFX Artist — <b>特效合成</b></span>
+        <span>Video Editor — <b>影片剪輯</b></span>
+        <span>Illustrator — <b>數位繪圖</b></span>
+      </div>
+    </div>
+    <p class="hero-desc">
+      臺師大物理系在學。用鏡頭說故事，用特效創造不可能。<br>
+      From physics formulas to frame-by-frame magic.
+    </p>
+    <div class="hero-cta">
+      <a href="#works" class="btn btn-primary">查看作品 ↓</a>
+      <a href="#contact" class="btn btn-outline">聯絡我</a>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    scroll
+  </div>
+</section>
+
+<div class="glow-div"></div>
+
+<!-- ABOUT -->
+<section class="sec" id="about">
+  <div class="section-label">About Me</div>
+  <h2 class="section-title reveal">不只是剪輯師，<br><span>是說故事的人</span></h2>
+  <div class="about-grid">
+    <div class="about-text reveal">
+      <p>哈囉！我是 Nathan，目前就讀 <strong>國立臺灣師範大學物理學系</strong>，大二。</p>
+      <p>從國中起自學剪輯，從 YouTube 長片到 60 秒的 Reels，從素材剪輯到 <strong>After Effects 特效合成</strong>，我喜歡把想法變成畫面。</p>
+      <p>中英文皆流利，曾翻譯並剪輯 <strong>國外實況主精華</strong>，也有獨立經營 YouTube 頻道的經驗。用物理人的眼光看創作，讓特效更合乎邏輯，也更震撼。</p>
+      <p>對了，會健身，<strong>但不練腿</strong>。🦵❌</p>
+    </div>
+    <div class="about-stats reveal">
+      <div class="stat-card"><div class="stat-num">5+</div><div class="stat-label">年自學剪輯經驗</div></div>
+      <div class="stat-card"><div class="stat-num">4</div><div class="stat-label">主要創作工具</div></div>
+      <div class="stat-card"><div class="stat-num">2</div><div class="stat-label">語言流利</div></div>
+      <div class="stat-card"><div class="stat-num">∞</div><div class="stat-label">創作熱情</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-div"></div>
+
+<!-- SKILLS -->
+<section class="sec" id="skills">
+  <div class="section-label">Skills &amp; Tools</div>
+  <h2 class="section-title reveal">工具只是媒介，<br><span>創意才是武器</span></h2>
+  <div class="skills-grid">
+    <div class="skill-card reveal">
+      <div class="skill-icon">🎬</div>
+      <div class="skill-name">影片剪輯</div>
+      <div class="skill-desc">YouTube 長片、Shorts、Reels 全類型剪輯。節奏感強，說故事能力強。</div>
+      <div class="skill-tags"><span class="tag">Premiere Pro</span><span class="tag">YouTube</span><span class="tag">Reels</span></div>
+    </div>
+    <div class="skill-card reveal">
+      <div class="skill-icon">✨</div>
+      <div class="skill-name">VFX 特效合成</div>
+      <div class="skill-desc">動態特效、合成、Tracking。讓普通鏡頭變成電影級畫面。</div>
+      <div class="skill-tags"><span class="tag">After Effects</span><span class="tag">Houdini</span><span class="tag">Compositing</span></div>
+    </div>
+    <div class="skill-card reveal">
+      <div class="skill-icon">🌀</div>
+      <div class="skill-name">3D 動態</div>
+      <div class="skill-desc">3D 建模、動畫、特效模擬。Blender 和 Houdini 雙修，Simulation 不是夢。</div>
+      <div class="skill-tags"><span class="tag">Blender</span><span class="tag">Houdini</span><span class="tag">3D VFX</span></div>
+    </div>
+    <div class="skill-card reveal">
+      <div class="skill-icon">🎨</div>
+      <div class="skill-name">數位繪圖</div>
+      <div class="skill-desc">插畫、概念設計、角色繪製。視覺語言橫跨東西方美學。</div>
+      <div class="skill-tags"><span class="tag">Illustration</span><span class="tag">Concept Art</span><span class="tag">Character Design</span></div>
+    </div>
+    <div class="skill-card reveal">
+      <div class="skill-icon">🌐</div>
+      <div class="skill-name">中英翻譯 / 在地化</div>
+      <div class="skill-desc">英文實況精華中文化，保留梗的同時讓台灣觀眾也笑得出來。</div>
+      <div class="skill-tags"><span class="tag">EN→ZH</span><span class="tag">Localization</span><span class="tag">Subtitles</span></div>
+    </div>
+    <div class="skill-card reveal">
+      <div class="skill-icon">⚛️</div>
+      <div class="skill-name">物理系腦袋</div>
+      <div class="skill-desc">臺師大物理在學生。對光學、運動、空間的直覺讓特效更真實、更有說服力。</div>
+      <div class="skill-tags"><span class="tag">Physics</span><span class="tag">NTNU</span><span class="tag">Optics</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-div"></div>
+
+<!-- WORKS -->
+<section class="sec" id="works">
+  <div class="section-label">Portfolio</div>
+  <h2 class="section-title reveal">精選作品集</h2>
+  <div class="works-tabs reveal">
+    <button class="tab-btn active" data-filter="all">全部</button>
+    <button class="tab-btn" data-filter="featured">精選</button>
+    <button class="tab-btn" data-filter="vfx">VFX 特效</button>
+    <button class="tab-btn" data-filter="shorts">Shorts / Reels</button>
+    <button class="tab-btn" data-filter="gaming">遊戲精華</button>
+    <button class="tab-btn" data-filter="art">繪圖</button>
+  </div>
+  <div class="works-grid" id="worksGrid">
+
+    <div class="work-card" data-cat="featured">
+      <div class="work-thumb" style="background:linear-gradient(135deg,#1a0040,#003060)"><span>🎬</span>
+        <div class="play-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,.15)"/><polygon points="10,8 16,12 10,16" fill="white"/></svg></div>
+      </div>
+      <div class="work-info"><div class="work-cat">精選作品</div><div class="work-title">精選影片 Vol.1</div>
+        <a href="https://www.youtube.com/watch?v=LGypy8o9mu0&t=257s" target="_blank" class="work-link">觀看 YouTube →</a></div>
+    </div>
+
+    <div class="work-card" data-cat="featured">
+      <div class="work-thumb" style="background:linear-gradient(135deg,#002040,#1a0030)"><span>🎞️</span>
+        <div class="play-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,.15)"/><polygon points="10,8 16,12 10,16" fill="white"/></svg></div>
+      </div>
+      <div class="work-info"><div class="work-cat">精選作品</div><div class="work-title">精選影片 Vol.2</div>
+        <a href="https://youtu.be/xC7ikgqVdlU?si=Q1bcipwRd0QckkVv" target="_blank" class="work-link">觀看 YouTube →</a></div>
+    </div>
+
+    <div class="work-card" data-cat="featured">
+      <div class="work-thumb" style="background:linear-gradient(135deg,#001a30,#200030)"><span>🎥</span>
+        <div class="play-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,.15)"/><polygon points="10,8 16,12 10,16" fill="white"/></svg></div>
+      </div>
+      <div class="work-info"><div class="work-cat">精選作品</div><div class="work-title">精選影片 Vol.3</div>
+        <a href="https://www.youtube.com/watch?v=3OycIe0RXJw&t=627s" target="_blank" class="work-link">觀看 YouTube →</a></div>
+    </div>
+
+    <div class="work-card" data-cat="featured">
+      <div class="work-thumb" style="background:linear-gradient(135deg,#001030,#1a0020)"><span>🔥</span>
+        <div class="play-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,.15)"/><polygon points="10,8 16,12 10,16" fill="white"/></svg></div>
+      </div>
+      <div class="work-info"><div class="work-cat">精選作品</div><div class="work-title">精選影片 Vol.4</div>
+        <a href="https://youtu.be/-3HSlDcHkEk?si=kwx7fkk0Wes2DBmo" target="_blank" class="work-link">觀看 YouTube →</a></div>
+    </div>
+
+    <div class="work-card" data-cat="vfx">
+      <div class="work-thumb" style="background:linear-gradient(135deg,#200040,#00102a)"><span>✨</span>
+        <div class="play-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,.15)"/><polygon points="10,8 16,12 10,16" fill="white"/></svg></div>
+      </div>
+      <div class="work-info"><div class="work-cat">VFX 特效</div><div class="work-title">VFX Reel Vol.1</div>
+        <a href="https://www.instagram.com/reel/DM4nw6By6tp/" target="_blank" class="work-link">Instagram →</a></div>
+    </div>
+
+    <div class="work-card" data-cat="vfx">
+      <div class="work-thumb" style="background:linear-gradient(135deg,#001020,#2a002a)"><span>💫</span>
+        <div class="play-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,.15)"/><polygon points="10,8 16,12 10,16" fill="white"/></svg></div>
+      </div>
+      <div class="work-info"><div class="work-cat">VFX 特效</div><div class="work-title">VFX Reel Vol.2</div>
+        <a href="https://www.instagram.com/reel/DMvUvZVSTgw/" target="_blank" class="work-link">Instagram →</a></div>
+    </div>
+
+    <div class="work-card" data-cat="vfx">
+      <div class="work-thumb" style="background:linear-gradient(135deg,#0a001a,#001530)"><span>⚡</span>
+        <div class="play-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,.15)"/><polygon points="10,8 16,12 10,16" fill="white"/></svg></div>
+      </div>
+      <div class="work-info"><div class="work-cat">VFX 特效</div><div class="work-title">VFX Reel Vol.3</div>
+        <a href="https://www.instagram.com/reel/DMza7rKyVUd/" target="_blank" class="work-link">Instagram →</a></div>
+    </div>
+
+    <div class="work-card" data-cat="shorts">
+      <div class="work-thumb" style="background:linear-gradient(135deg,#001a1a,#1a0015)"><span>🩳</span>
+        <div class="play-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,.15)"/><polygon points="10,8 16,12 10,16" fill="white"/></svg></div>
+      </div>
+      <div class="work-info"><div class="work-cat">Shorts / Reels</div><div class="work-title">Short Reel</div>
+        <a href="https://www.instagram.com/reel/DU-_cbvEvF7/" target="_blank" class="work-link">Instagram →</a></div>
+    </div>
+
+    <div class="work-card" data-cat="shorts">
+      <div class="work-thumb" style="background:linear-gradient(135deg,#002010,#1a1000)"><span>🎯</span>
+        <div class="play-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,.15)"/><polygon points="10,8 16,12 10,16" fill="white"/></svg></div>
+      </div>
+      <div class="work-info"><div class="work-cat">Shorts / Reels — 六指淵</div><div class="work-title">Huber Reel 剪輯</div>
+        <a href="https://www.instagram.com/huber0203/reel/C7tpetYyjKN/" target="_blank" class="work-link">Instagram →</a></div>
+    </div>
+
+    <div class="work-card" data-cat="shorts">
+      <div class="work-thumb" style="background:linear-gradient(135deg,#001020,#200010)"><span>📱</span>
+        <div class="play-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,.15)"/><polygon points="10,8 16,12 10,16" fill="white"/></svg></div>
+      </div>
+      <div class="work-info"><div class="work-cat">Shorts / Reels</div><div class="work-title">Neil Reel 剪輯</div>
+        <a href="https://www.instagram.com/neil_e_mc2/reel/DK8qozmyuTv/" target="_blank" class="work-link">Instagram →</a></div>
+    </div>
+
+    <div class="work-card" data-cat="gaming">
+      <div class="work-thumb" style="background:linear-gradient(135deg,#001030,#200010)"><span>🎮</span>
+        <div class="play-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,.15)"/><polygon points="10,8 16,12 10,16" fill="white"/></svg></div>
+      </div>
+      <div class="work-info"><div class="work-cat">遊戲精華</div><div class="work-title">Gaming Highlight Vol.1</div>
+        <a href="https://youtu.be/xHDbhcW3wIo?si=yVwDmYnYfIi0fBjR" target="_blank" class="work-link">觀看 YouTube →</a></div>
+    </div>
+
+    <div class="work-card" data-cat="gaming">
+      <div class="work-thumb" style="background:linear-gradient(135deg,#001020,#0a0025)"><span>🕹️</span>
+        <div class="play-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,.15)"/><polygon points="10,8 16,12 10,16" fill="white"/></svg></div>
+      </div>
+      <div class="work-info"><div class="work-cat">遊戲精華</div><div class="work-title">Gaming Highlight Vol.2</div>
+        <a href="https://youtu.be/XEPs0URozBo" target="_blank" class="work-link">觀看 YouTube →</a></div>
+    </div>
+
+    <div class="work-card" data-cat="gaming">
+      <div class="work-thumb" style="background:linear-gradient(135deg,#00101a,#150020)"><span>👾</span>
+        <div class="play-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,.15)"/><polygon points="10,8 16,12 10,16" fill="white"/></svg></div>
+      </div>
+      <div class="work-info"><div class="work-cat">遊戲精華</div><div class="work-title">Gaming Highlight Vol.3</div>
+        <a href="https://youtu.be/h2a6E-w-KtM?si=2ZTODs9SS46FUe8c" target="_blank" class="work-link">觀看 YouTube →</a></div>
+    </div>
+
+    <div class="work-card" data-cat="art">
+      <div class="work-thumb" style="background:linear-gradient(135deg,#1a0a00,#001a10)"><span>🎨</span>
+        <div class="play-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,.15)"/><polygon points="10,8 16,12 10,16" fill="white"/></svg></div>
+      </div>
+      <div class="work-info"><div class="work-cat">數位繪圖</div><div class="work-title">Illustration Vol.1</div>
+        <a href="https://www.instagram.com/neil_art_art/p/C4H346ZLSPf/" target="_blank" class="work-link">Instagram →</a></div>
+    </div>
+
+    <div class="work-card" data-cat="art">
+      <div class="work-thumb" style="background:linear-gradient(135deg,#100a1a,#001020)"><span>🖌️</span>
+        <div class="play-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,.15)"/><polygon points="10,8 16,12 10,16" fill="white"/></svg></div>
+      </div>
+      <div class="work-info"><div class="work-cat">數位繪圖</div><div class="work-title">Illustration Vol.2</div>
+        <a href="https://www.instagram.com/neil_art_art/p/DLfUjlTSafD/" target="_blank" class="work-link">Instagram →</a></div>
+    </div>
+
+    <div class="work-card" data-cat="art">
+      <div class="work-thumb" style="background:linear-gradient(135deg,#0a1a00,#100020)"><span>🖼️</span>
+        <div class="play-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,.15)"/><polygon points="10,8 16,12 10,16" fill="white"/></svg></div>
+      </div>
+      <div class="work-info"><div class="work-cat">數位繪圖</div><div class="work-title">Illustration Vol.3</div>
+        <a href="https://www.instagram.com/neil_art_art/p/C06qvFzL52h/" target="_blank" class="work-link">Instagram →</a></div>
+    </div>
+
+  </div>
+</section>
+
+<div class="glow-div"></div>
+
+<!-- COLLAB -->
+<section class="sec" id="collab">
+  <div class="section-label">Collaborations</div>
+  <h2 class="section-title reveal">合作過的創作者</h2>
+  <div class="collab-list">
+    <div class="collab-row reveal">
+      <div class="collab-logo">六</div>
+      <div class="collab-info">
+        <h3>六指淵 Huber</h3>
+        <p>台灣知名創作者。合作製作 IG Reels 及 TikTok 短影音，包含剪輯節奏設計與視覺風格統一。</p>
+      </div>
+    </div>
+    <div class="collab-row reveal">
+      <div class="collab-logo" style="background:linear-gradient(135deg,#06b6d4,#0891b2)">遐</div>
+      <div class="collab-info">
+        <h3>遐光映畫 XG Studios</h3>
+        <p>專業影像製作團隊。合作短影音剪輯，從素材整理到最終輸出全流程參與。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-div"></div>
+
+<!-- CONTACT -->
+<section class="sec" id="contact" style="text-align:center;position:relative">
+  <div class="contact-glow"></div>
+  <div class="section-label" style="justify-content:center">Contact</div>
+  <h2 class="section-title reveal" style="margin-bottom:16px">一起做點<span>很酷的東西</span></h2>
+  <p class="reveal" style="color:var(--muted);font-size:1.1rem;max-width:500px;margin:0 auto;line-height:1.9">
+    歡迎接洽剪輯、VFX 特效、繪圖等各類合作。<br>中英皆可溝通，歡迎任何有趣的提案。
+  </p>
+  <div class="contact-links reveal">
+    <a href="mailto:nathaniel_1231@icloud.com" class="contact-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
+      Email
+    </a>
+    <a href="https://www.instagram.com/neil_e_mc2" target="_blank" class="contact-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+      @neil_e_mc2
+    </a>
+    <a href="https://www.youtube.com/@nathaniel3.1415" target="_blank" class="contact-link">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.8 8S21.5 6 20.6 5.2C19.5 4 18.2 4 17.6 3.9 15.6 3.7 12 3.7 12 3.7s-3.6 0-5.6.2c-.6.1-1.9.1-3 1.3C2.5 6 2.2 8 2.2 8S1.9 10.3 1.9 12.6v2.1c0 2.3.3 4.5.3 4.5s.3 2 1.2 2.8c1.1 1.2 2.6 1.1 3.3 1.2C8.5 23.3 12 23.3 12 23.3s3.6 0 5.6-.2c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8s.3-2.3.3-4.5v-2.1C22.1 10.3 21.8 8 21.8 8z"/><polygon points="10,15.5 16,12 10,8.5" fill="white"/></svg>
+      YouTube
+    </a>
+    <a href="#" class="contact-link" onclick="navigator.clipboard&&navigator.clipboard.writeText('nathan_physics');this.textContent='Copied!';setTimeout(()=>this.innerHTML=dscIcon+' nathan_physics',1500);return false">
+      <svg id="dscIcon" viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px"><path d="M20.3 4.4A19.1 19.1 0 0 0 15.5 3a13 13 0 0 0-.6 1.2 17.7 17.7 0 0 0-5.8 0A13 13 0 0 0 8.5 3 19 19 0 0 0 3.7 4.4C.5 9.3-.3 14 .1 18.7a19.3 19.3 0 0 0 5.9 3 14 14 0 0 0 1.2-2 12.5 12.5 0 0 1-2-.9l.5-.4a13.7 13.7 0 0 0 11.8 0l.5.4a12.5 12.5 0 0 1-2 .9 14 14 0 0 0 1.2 2 19.2 19.2 0 0 0 5.9-3c.4-5.3-.7-10-3.8-14.3zM8 15.5c-1.3 0-2.3-1.2-2.3-2.6s1-2.6 2.3-2.6 2.3 1.2 2.3 2.6-1 2.6-2.3 2.6zm8 0c-1.3 0-2.3-1.2-2.3-2.6s1-2.6 2.3-2.6 2.3 1.2 2.3 2.6-1 2.6-2.3 2.6z"/></svg>
+      nathan_physics
+    </a>
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 Nathaniel 胡皓承 &nbsp;·&nbsp; Crafted with ✨ &amp; physics intuition</p>
+</footer>
+
+<script>
+// ── CURSOR ──────────────────────────────────────────
+const cur=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+(function tick(){
+  cur.style.left=mx+'px';cur.style.top=my+'px';
+  rx+=(mx-rx)*.12;ry+=(my-ry)*.12;
+  ring.style.left=rx+'px';ring.style.top=ry+'px';
+  requestAnimationFrame(tick);
+})();
+document.querySelectorAll('a,button').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{
+    cur.style.width='20px';cur.style.height='20px';cur.style.background='#06b6d4';
+    ring.style.width='56px';ring.style.height='56px';ring.style.borderColor='#06b6d4';
+  });
+  el.addEventListener('mouseleave',()=>{
+    cur.style.width='12px';cur.style.height='12px';cur.style.background='#7c3aed';
+    ring.style.width='36px';ring.style.height='36px';ring.style.borderColor='rgba(124,58,237,.6)';
+  });
+});
+
+// ── PARTICLES ────────────────────────────────────────
+const cv=document.getElementById('particles'),cx2=cv.getContext('2d');
+let W,H,pts=[];
+function rsz(){W=cv.width=innerWidth;H=cv.height=innerHeight}rsz();
+window.addEventListener('resize',rsz);
+class Dot{
+  constructor(){this.reset()}
+  reset(){this.x=Math.random()*W;this.y=Math.random()*H;this.vx=(Math.random()-.5)*.35;this.vy=(Math.random()-.5)*.35;this.s=Math.random()*1.8+.3;this.a=Math.random()*.5+.1;this.c=Math.random()>.5?'124,58,237':'6,182,212'}
+  update(){this.x+=this.vx;this.y+=this.vy;if(this.x<0||this.x>W||this.y<0||this.y>H)this.reset()}
+  draw(){cx2.beginPath();cx2.arc(this.x,this.y,this.s,0,Math.PI*2);cx2.fillStyle='rgba('+this.c+','+this.a+')';cx2.fill()}
+}
+for(let i=0;i<120;i++)pts.push(new Dot());
+(function loop(){
+  cx2.clearRect(0,0,W,H);
+  for(let i=0;i<pts.length;i++){
+    pts[i].update();pts[i].draw();
+    for(let j=i+1;j<pts.length;j++){
+      const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<110){cx2.beginPath();cx2.moveTo(pts[i].x,pts[i].y);cx2.lineTo(pts[j].x,pts[j].y);cx2.strokeStyle='rgba(124,58,237,'+(.07*(1-d/110))+')';cx2.lineWidth=.5;cx2.stroke()}
+    }
+  }
+  requestAnimationFrame(loop);
+})();
+
+// ── SCROLL REVEAL ────────────────────────────────────
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach((e,i)=>{if(e.isIntersecting)setTimeout(()=>e.target.classList.add('visible'),i*90)});
+},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// ── WORKS FILTER ─────────────────────────────────────
+const ks=document.createElement('style');
+ks.textContent='@keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}';
+document.head.appendChild(ks);
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const f=btn.dataset.filter;
+    document.querySelectorAll('.work-card').forEach((c,i)=>{
+      if(f==='all'||c.dataset.cat===f){
+        c.classList.remove('hidden');
+        c.style.animation='none';void c.offsetHeight;
+        c.style.animation='cardIn .45s '+(i*.04)+'s ease forwards';
+        c.style.opacity='0';
+      }else c.classList.add('hidden');
+    });
+  });
+});
+
+// ── 3D TILT ──────────────────────────────────────────
+document.querySelectorAll('.work-card').forEach(c=>{
+  c.addEventListener('mousemove',e=>{
+    const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+    c.style.transform='translateY(-8px) rotateX('+(y*-10)+'deg) rotateY('+(x*10)+'deg)';
+    c.style.transition='box-shadow .05s,border .05s';
+  });
+  c.addEventListener('mouseleave',()=>{c.style.transform='';c.style.transition='all .4s'});
+});
+
+// ── PARALLAX + NAV ────────────────────────────────────
+window.addEventListener('scroll',()=>{
+  const y=scrollY,h=document.querySelector('.hero-inner');
+  if(h)h.style.transform='translateY('+(y*.28)+'px)';
+  document.getElementById('navbar').style.background=y>60?'rgba(5,5,8,.96)':'rgba(5,5,8,.7)';
+});
+
+// ── GLITCH NAME ───────────────────────────────────────
+const nm=document.querySelector('.hero-name .en'),orig='Nathaniel',gc='!@#$%^&*<>?/|~※§';
+setInterval(()=>{
+  if(Math.random()>.82){
+    nm.textContent=orig.split('').map(c=>Math.random()>.75?gc[Math.floor(Math.random()*gc.length)]:c).join('');
+    setTimeout(()=>nm.textContent=orig,90);
+  }
+},220);
+
+// ── SMOOTH ANCHOR ────────────────────────────────────
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    const t=document.querySelector(a.getAttribute('href'));
+    if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth',block:'start'})}
+  });
+});
+</script>
+</body>
+</html>
