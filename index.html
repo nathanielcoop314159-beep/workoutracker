@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nathaniel 胡皓承 — VFX · 剪輯 · 繪圖</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Space+Grotesk:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500&display=swap');
+
+:root {
+  --bg: #0a0a0a;
+  --fg: #f0ede8;
+  --dim: #4a4a4a;
+  --dim2: #808080;
+  --line: rgba(240,237,232,0.07);
+  --line2: rgba(240,237,232,0.14);
+  --card: #111;
+  --mono: 'DM Mono', monospace;
+  --sans: 'Space Grotesk', 'Noto Sans TC', sans-serif;
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body { background:var(--bg); color:var(--fg); font-family:var(--sans); overflow-x:hidden; cursor:none; }
+@media (hover: none) and (pointer: coarse) {
+  body { cursor:auto; }
+  #cur, #cur-ring, #cur-dot { display:none !important; }
+}
+
+/* ══ CURSOR ══ */
+#cur {
+  position:fixed; top:0; left:0; z-index:9999; pointer-events:none;
+  width:1px; height:18px; background:var(--fg);
+  transform:translate(-50%,-50%); mix-blend-mode:difference;
+  transition:width .2s, height .2s; will-change:transform;
+}
+#cur::before {
+  content:''; position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%); width:18px; height:1px; background:var(--fg);
+  transition:width .2s;
+}
+body.hov #cur { width:1px; height:28px; }
+body.hov #cur::before { width:28px; }
+body.clicking #cur { width:6px; height:6px; border-radius:50%; }
+body.clicking #cur::before { width:0; }
+#cur-ring {
+  position:fixed; top:0; left:0; z-index:9997; pointer-events:none;
+  width:36px; height:36px; border-radius:50%;
+  border:1px solid rgba(240,237,232,0.35);
+  transform:translate(-50%,-50%);
+  transition:width .35s cubic-bezier(.16,1,.3,1), height .35s cubic-bezier(.16,1,.3,1), border-color .3s;
+  will-change:transform;
+}
+body.hov #cur-ring { width:56px; height:56px; border-color:rgba(240,237,232,0.55); }
+body.clicking #cur-ring { width:20px; height:20px; border-color:rgba(240,237,232,0.9); }
+#cur-dot {
+  position:fixed; top:0; left:0; z-index:9998; pointer-events:none;
+  width:3px; height:3px; border-radius:50%; background:rgba(240,237,232,0.6);
+  transform:translate(-50%,-50%); opacity:0; transition:opacity .3s; will-change:transform;
+}
+body.hov #cur-dot { opacity:1; }
+
+/* ══ GRID BG ══ */
+#grid-cv { position:fixed; inset:0; z-index:0; pointer-events:none; }
+::-webkit-scrollbar { width:1px; }
+::-webkit-scrollbar-thumb { background:var(--dim); }
+
+/* ══ NAV ══ */
+nav {
+  position:fixed; top:0; width:100%; z-index:100;
+  height:52px; padding:0 48px;
+  display:flex; justify-content:space-between; align-items:center;
+  border-bottom:1px solid var(--line);
+  background:rgba(10,10,10,.92); backdrop-filter:blur(16px);
+}
+.nav-logo { font-family:var(--mono); font-size:.85rem; color:var(--dim2); letter-spacing:.1em; }
+.nav-logo b { color:var(--fg); font-weight:500; }
+.nav-links { display:flex; list-style:none; }
+.nav-links a {
+  font-family:var(--mono); font-size:.78rem; color:var(--dim);
+  letter-spacing:.1em; text-decoration:none; text-transform:uppercase;
+  padding:0 20px; height:52px; display:flex; align-items:center;
+  border-left:1px solid var(--line); transition:color .2s, background .2s;
+}
+.nav-links a:hover { color:var(--fg); background:rgba(240,237,232,.04); }
+.nav-progress {
+  font-family:var(--mono); font-size:.75rem; color:var(--dim);
+  border-left:1px solid var(--line); padding:0 16px; height:52px;
+  display:flex; align-items:center; letter-spacing:.1em; min-width:60px;
+}
+
+/* ══ HERO ══ */
+#hero {
+  min-height:100vh; padding-top:52px;
+  display:grid; grid-template-columns:1fr 1fr;
+  border-bottom:1px solid var(--line); position:relative; z-index:2;
+}
+.hero-l {
+  padding:56px 48px; border-right:1px solid var(--line);
+  display:flex; flex-direction:column; justify-content:space-between; gap:40px;
+}
+.hero-r { display:flex; flex-direction:column; }
+.hero-label {
+  font-family:var(--mono); font-size:.6rem; color:var(--dim2);
+  letter-spacing:.18em; text-transform:uppercase; display:flex; align-items:center; gap:10px;
+}
+.hero-label::before { content:''; width:12px; height:1px; background:var(--dim); }
+.hero-name {
+  font-size:clamp(3.6rem,6vw,7.5rem); font-weight:700;
+  letter-spacing:-.04em; line-height:.92; white-space:nowrap;
+  opacity:0; animation:up .9s .2s forwards;
+}
+.hero-zh {
+  font-size:.95rem; font-weight:300; letter-spacing:.22em;
+  color:var(--dim2); font-family:var(--mono); margin-top:10px;
+  opacity:0; animation:up .9s .4s forwards;
+}
+.hero-bio { opacity:0; animation:up .9s .6s forwards; }
+.hero-bio p { font-size:.9rem; color:var(--dim2); line-height:1.85; }
+.hero-bio p+p { margin-top:10px; }
+.hero-bio strong { color:var(--fg); font-weight:400; }
+.hero-meta {
+  display:grid; grid-template-columns:1fr 1fr; gap:1px;
+  background:var(--line); border-top:1px solid var(--line);
+  opacity:0; animation:up .9s .8s forwards;
+}
+.meta-cell { background:var(--bg); padding:14px 18px; }
+.meta-k { font-family:var(--mono); font-size:.56rem; color:var(--dim); letter-spacing:.1em; text-transform:uppercase; margin-bottom:4px; }
+.meta-v { font-size:.8rem; color:var(--fg); }
+.hero-photo { padding:32px 48px 28px; border-bottom:1px solid var(--line); opacity:0; animation:up .8s .3s forwards; }
+.block-label {
+  font-family:var(--mono); font-size:.56rem; color:var(--dim);
+  letter-spacing:.14em; text-transform:uppercase; margin-bottom:10px;
+  display:flex; align-items:center; gap:8px;
+}
+.block-label::before { content:''; width:8px; height:1px; background:var(--dim); }
+.photo-frame {
+  position:relative; width:100%; aspect-ratio:3/4; max-height:300px;
+  border:1px solid var(--line2); overflow:hidden; background:var(--card);
+}
+.photo-frame::before, .photo-frame::after { content:''; position:absolute; width:14px; height:14px; z-index:2; }
+.photo-frame::before { top:7px; left:7px; border-top:1px solid rgba(240,237,232,.4); border-left:1px solid rgba(240,237,232,.4); }
+.photo-frame::after  { bottom:7px; right:7px; border-bottom:1px solid rgba(240,237,232,.4); border-right:1px solid rgba(240,237,232,.4); }
+.photo-frame img { width:100%; height:100%; display:block; object-fit:cover; object-position:top center; filter:brightness(.88) saturate(.7); }
+.photo-placeholder {
+  position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:12px; color:var(--dim); font-family:var(--mono); font-size:.58rem; letter-spacing:.1em; text-align:center;
+}
+.photo-placeholder svg { width:28px; height:28px; opacity:.25; }
+.hero-stats { flex:1; padding:24px 48px 28px; display:flex; flex-direction:column; opacity:0; animation:up .8s .5s forwards; }
+.sv-row { padding:16px 0; border-bottom:1px solid var(--line); display:grid; grid-template-columns:1fr; }
+.sv-row:first-of-type { border-top:1px solid var(--line); }
+.sv-top { display:flex; align-items:baseline; gap:8px; margin-bottom:10px; }
+.sv-num { font-size:2rem; font-weight:700; letter-spacing:-.04em; line-height:1; font-variant-numeric:tabular-nums; }
+.sv-unit { font-family:var(--mono); font-size:.58rem; color:var(--dim2); letter-spacing:.06em; }
+.sv-desc { font-family:var(--mono); font-size:.56rem; color:var(--dim); letter-spacing:.08em; line-height:1.5; }
+.sv-track { height:1px; background:var(--line2); position:relative; width:100%; }
+.sv-fill { position:absolute; top:0; left:0; height:1px; background:var(--fg); opacity:.65; width:0; transition:width 1.2s cubic-bezier(.16,1,.3,1); }
+.sv-dots { display:flex; gap:5px; margin-top:8px; flex-wrap:wrap; }
+.sv-dot { width:5px; height:5px; border-radius:50%; border:1px solid var(--dim); transition:background .3s, border-color .3s; }
+.sv-dot.on { background:var(--fg); border-color:var(--fg); }
+@keyframes up { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+/* ══ SECTION HEADING ══ */
+.sec { position:relative; z-index:2; border-bottom:1px solid var(--line); }
+.sec-hd { padding:24px 48px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:16px; }
+.sec-rom { font-family:var(--mono); font-size:.88rem; color:var(--dim); letter-spacing:.06em; min-width:48px; }
+.sec-zh  { font-size:1.15rem; font-weight:600; }
+.sec-en  { font-family:var(--mono); font-size:.72rem; color:var(--dim2); letter-spacing:.08em; }
+.sec-body { padding:52px 48px; }
+
+/* ══ ABOUT ══ */
+.about-grid { display:grid; grid-template-columns:1fr 1px 1fr; }
+.about-div  { background:var(--line); }
+.about-l    { padding-right:48px; }
+.about-r    { padding-left:48px; }
+.about-p    { font-size:.9rem; color:var(--dim2); line-height:1.9; }
+.about-p+.about-p { margin-top:14px; }
+.about-p strong { color:var(--fg); font-weight:400; }
+.stat-row { display:flex; align-items:baseline; justify-content:space-between; padding:14px 0; border-bottom:1px solid var(--line); }
+.stat-row:first-child { border-top:1px solid var(--line); }
+.stat-n  { font-size:1.9rem; font-weight:700; letter-spacing:-.04em; line-height:1; }
+.stat-zh { font-size:.76rem; color:var(--dim2); }
+.stat-en { font-family:var(--mono); font-size:.56rem; color:var(--dim); letter-spacing:.08em; text-align:right; }
+
+/* ══ SKILLS ══ */
+.sk-table { width:100%; border-collapse:collapse; }
+.sk-table tr { border-bottom:1px solid var(--line); transition:background .15s; }
+.sk-table tr:first-child { border-top:1px solid var(--line); }
+.sk-table tr:hover { background:rgba(240,237,232,.03); }
+.sk-table tr:hover .sk-zh { color:var(--fg); }
+.sk-i  { font-family:var(--mono); font-size:.54rem; color:var(--dim); padding:16px 14px 16px 48px; vertical-align:middle; width:68px; }
+.sk-zh { font-size:.9rem; padding:16px 14px; vertical-align:middle; width:145px; transition:color .2s; }
+.sk-en { font-family:var(--mono); font-size:.56rem; color:var(--dim); padding:16px 14px; vertical-align:middle; letter-spacing:.06em; }
+.sk-tags { padding:16px 14px; vertical-align:middle; }
+.sk-tag { display:inline-block; margin:2px 3px 2px 0; font-family:var(--mono); font-size:.54rem; color:var(--dim); border:1px solid var(--line); padding:2px 7px; transition:border-color .2s, color .2s; }
+.sk-table tr:hover .sk-tag { border-color:var(--line2); color:var(--dim2); }
+.sk-bar-cell { padding:16px 48px 16px 14px; vertical-align:middle; width:120px; }
+.sk-track { height:1px; background:var(--line); position:relative; }
+.sk-fill  { position:absolute; top:0; left:0; height:1px; background:var(--fg); opacity:.55; width:0; transition:width 1s ease; }
+
+/* ══════════════════════════════════════════════
+   VFX SECTION — 全版面 GIF 展示
+══════════════════════════════════════════════ */
+.vfx-grid {
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+}
+
+/* 一般卡片 */
+.vfx-card {
+  position:relative; overflow:hidden;
+  border-right:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  background:var(--bg);
+  transition:background .2s;
+}
+.vfx-grid > .vfx-card:nth-child(3n) { border-right:none; }
+.vfx-card:hover { background:#0f0f0f; }
+
+/* water 四連橫排 */
+.vfx-row-4 {
+  grid-column:1 / -1;
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  border-bottom:1px solid var(--line);
+}
+.vfx-row-4 .vfx-card { border-bottom:none; }
+.vfx-row-4 .vfx-card:last-child { border-right:none; }
+
+/* Iron Man 兩格橫排 */
+.vfx-row-2 {
+  grid-column:1 / -1;
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  border-bottom:1px solid var(--line);
+}
+.vfx-row-2 .vfx-card { border-bottom:none; }
+.vfx-row-2 .vfx-card:last-child { border-right:none; }
+
+/* Cemetery MV 三格橫排 */
+.vfx-row-3 {
+  grid-column:1 / -1;
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  border-bottom:1px solid var(--line);
+}
+.vfx-row-3 .vfx-card { border-bottom:none; }
+.vfx-row-3 .vfx-card:last-child { border-right:none; }
+
+/* 組別標題列 */
+.vfx-group-title {
+  grid-column: 1 / -1;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: baseline; gap: 14px;
+}
+.vfx-group-num {
+  font-family: var(--mono); font-size: .54rem; color: var(--dim);
+  letter-spacing: .1em; min-width: 28px;
+}
+.vfx-group-name {
+  font-size: .95rem; font-weight: 600; color: var(--fg); letter-spacing: -.01em;
+}
+.vfx-group-tools {
+  font-family: var(--mono); font-size: .56rem; color: var(--dim2);
+  letter-spacing: .06em; margin-left: 4px;
+}
+
+/* GIF 容器 */
+.vfx-gif {
+  width:100%; padding-top:56.25%;
+  position:relative; overflow:hidden;
+  background:#0d0d0d;
+  border-bottom:1px solid var(--line);
+}
+.vfx-row-4 .vfx-gif { padding-top:65%; }
+
+.vfx-gif img {
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  object-fit:cover; display:block;
+  filter:brightness(.88) saturate(.8);
+  transition:transform .55s cubic-bezier(.16,1,.3,1), filter .4s;
+}
+.vfx-card:hover .vfx-gif img {
+  transform:scale(1.05);
+  filter:brightness(1.05) saturate(1);
+}
+
+/* 角落標籤 */
+.vfx-label {
+  position:absolute; top:8px; right:8px; z-index:3;
+  font-family:var(--mono); font-size:.46rem; color:var(--dim2);
+  letter-spacing:.08em; background:rgba(10,10,10,.82); padding:2px 6px;
+  border:1px solid var(--line2); pointer-events:none;
+}
+
+/* 資訊欄 */
+.vfx-info { padding:10px 16px 13px; }
+.vfx-title { font-size:.82rem; color:var(--dim2); transition:color .2s; }
+.vfx-card:hover .vfx-title { color:var(--fg); }
+.vfx-sub { font-family:var(--mono); font-size:.5rem; color:var(--dim); letter-spacing:.06em; margin-top:3px; }
+
+/* ══════════════════════════════════════════════
+   WORKS 全版面（剪輯 / 遊戲 / 插圖）
+══════════════════════════════════════════════ */
+.works-filter {
+  display:flex; border-bottom:1px solid var(--line);
+  overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;
+  position:sticky; top:52px; z-index:50;
+  background:rgba(10,10,10,.95); backdrop-filter:blur(16px);
+}
+.works-filter::-webkit-scrollbar { display:none; }
+.f-btn {
+  padding:14px 22px; font-family:var(--mono); font-size:.72rem;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--dim);
+  background:transparent; border:none; border-right:1px solid var(--line);
+  cursor:none; white-space:nowrap; flex-shrink:0;
+  display:flex; flex-direction:column; gap:3px; align-items:flex-start; transition:all .2s;
+}
+.f-btn .f-zh { font-family:var(--sans); font-size:.88rem; color:var(--dim2); letter-spacing:0; }
+.f-btn:hover, .f-btn.active { color:var(--bg); background:var(--fg); }
+.f-btn:hover .f-zh, .f-btn.active .f-zh { color:var(--bg); }
+
+.works-full { display:grid; grid-template-columns:1fr 1fr; }
+
+.wf-card {
+  position:relative; overflow:hidden;
+  border-right:1px solid var(--line); border-bottom:1px solid var(--line);
+  text-decoration:none; color:inherit; display:block;
+  transition:background .25s; background:var(--bg);
+}
+.wf-card:nth-child(2n) { border-right:none; }
+.wf-card.hidden { display:none; }
+
+.wf-thumb {
+  width:100%; padding-top:56.25%;
+  position:relative; overflow:hidden;
+  background-size:cover; background-position:center; background-color:#0f0f0f;
+  border-bottom:1px solid var(--line); transition:filter .35s;
+}
+.wf-card:hover .wf-thumb { filter:brightness(.45) saturate(.3); }
+
+.wf-overlay {
+  position:absolute; inset:0; z-index:5;
+  display:flex; flex-direction:column; justify-content:flex-end; padding:20px 24px;
+  opacity:0; transition:opacity .3s;
+  background:linear-gradient(to top, rgba(10,10,10,.85) 0%, transparent 60%);
+}
+.wf-card:hover .wf-overlay { opacity:1; }
+.wf-overlay-title { font-size:.88rem; color:var(--fg); font-weight:500; line-height:1.4; margin-bottom:6px; }
+.wf-overlay-meta  { font-family:var(--mono); font-size:.58rem; color:var(--dim2); letter-spacing:.08em; }
+.wf-label {
+  position:absolute; top:10px; right:10px; z-index:6;
+  font-family:var(--mono); font-size:.48rem; color:var(--dim2);
+  letter-spacing:.08em; background:rgba(10,10,10,.82); padding:3px 7px; border:1px solid var(--line2);
+}
+.wf-emoji { position:absolute; top:10px; left:12px; z-index:6; font-size:1rem; pointer-events:none; transition:opacity .3s; }
+.wf-card:hover .wf-emoji { opacity:.1; }
+.wf-play { position:absolute; inset:0; z-index:7; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .25s; }
+.wf-play svg { width:52px; height:52px; }
+.wf-card:hover .wf-play { opacity:1; }
+.wf-info { padding:14px 24px 16px; display:flex; align-items:center; justify-content:space-between; min-height:62px; }
+.wf-info-l { flex:1; min-width:0; }
+.wf-num    { font-family:var(--mono); font-size:.52rem; color:var(--dim); margin-bottom:3px; }
+.wf-title  { font-size:.84rem; color:var(--dim2); line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; transition:color .2s; }
+.wf-card:hover .wf-title { color:var(--fg); }
+.wf-platform { font-family:var(--mono); font-size:.52rem; color:var(--dim); letter-spacing:.06em; margin-top:2px; }
+.wf-arrow { font-size:.8rem; color:var(--dim); margin-left:12px; flex-shrink:0; opacity:0; transition:opacity .2s, transform .2s; }
+.wf-card:hover .wf-arrow { opacity:1; transform:translate(3px,-3px); }
+
+/* 第一張大橫幅 */
+.wf-card.featured-hero { grid-column:1 / -1; }
+.wf-card.featured-hero .wf-thumb { padding-top:40%; }
+
+/* ══ COLLAB ══ */
+.collab-grid { display:grid; grid-template-columns:1fr 1fr; }
+.c-cell { padding:44px 48px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); transition:background .2s; }
+.c-cell:nth-child(2n) { border-right:none; }
+.c-cell:hover { background:rgba(240,237,232,.025); }
+.c-idx  { font-family:var(--mono); font-size:.54rem; color:var(--dim); margin-bottom:24px; }
+.c-name { font-size:1.2rem; font-weight:500; letter-spacing:-.02em; margin-bottom:6px; }
+.c-sub  { font-family:var(--mono); font-size:.6rem; color:var(--dim2); margin-bottom:16px; letter-spacing:.06em; }
+.c-desc { font-size:.84rem; color:var(--dim2); line-height:1.75; }
+
+/* ══ CONTACT ══ */
+.contact-grid { display:grid; grid-template-columns:1fr 1fr; }
+.ct-l { padding:60px 48px; border-right:1px solid var(--line); }
+.ct-big { font-size:clamp(2.2rem,4vw,4.8rem); font-weight:700; letter-spacing:-.04em; line-height:.95; margin-bottom:22px; }
+.ct-sub { font-size:.86rem; color:var(--dim2); line-height:1.8; }
+.ct-r   { display:flex; flex-direction:column; }
+.ct-row { display:grid; grid-template-columns:82px 1fr auto; align-items:center; gap:16px; padding:20px 48px; border-bottom:1px solid var(--line); text-decoration:none; color:inherit; transition:background .2s; }
+.ct-row:hover { background:rgba(240,237,232,.03); }
+.ct-row:hover .ct-handle { color:var(--fg); }
+.ct-row:hover .ct-arrow  { transform:translate(4px,-4px); color:var(--fg); }
+.ct-platform { font-family:var(--mono); font-size:.56rem; color:var(--dim); letter-spacing:.1em; text-transform:uppercase; line-height:1.6; }
+.ct-handle   { font-size:.86rem; color:var(--dim2); transition:color .2s; }
+.ct-arrow    { font-size:.8rem; color:var(--dim); transition:all .2s; }
+
+/* ══ FOOTER ══ */
+footer { position:relative; z-index:2; padding:18px 48px; border-top:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; }
+.ft { font-family:var(--mono); font-size:.56rem; color:var(--dim); letter-spacing:.08em; }
+
+/* ══ REVEAL ══ */
+.reveal { opacity:0; transform:translateY(14px); transition:opacity .7s, transform .7s; }
+.reveal.visible { opacity:1; transform:none; }
+
+/* ══ HAMBURGER ══ */
+.nav-hamburger { display:none; flex-direction:column; justify-content:center; gap:5px; width:44px; height:52px; background:none; border:none; border-left:1px solid var(--line); padding:0 10px; cursor:none; flex-shrink:0; }
+.nav-hamburger span { display:block; width:100%; height:1px; background:var(--dim2); transition:all .3s; }
+body.menu-open .nav-hamburger span:nth-child(1) { transform:translateY(6px) rotate(45deg); }
+body.menu-open .nav-hamburger span:nth-child(2) { opacity:0; }
+body.menu-open .nav-hamburger span:nth-child(3) { transform:translateY(-6px) rotate(-45deg); }
+.nav-mobile-menu { display:none; position:fixed; top:48px; left:0; right:0; bottom:0; background:rgba(10,10,10,.97); backdrop-filter:blur(20px); z-index:99; flex-direction:column; justify-content:center; align-items:center; border-top:1px solid var(--line); }
+body.menu-open .nav-mobile-menu { display:flex; }
+.nav-mobile-menu a { font-family:var(--mono); font-size:1.1rem; color:var(--dim2); letter-spacing:.18em; text-decoration:none; text-transform:uppercase; padding:24px 40px; width:100%; text-align:center; border-bottom:1px solid var(--line); transition:color .2s, background .2s; }
+.nav-mobile-menu a:hover { color:var(--fg); background:rgba(240,237,232,.04); }
+
+/* ══ MOBILE ══ */
+@media (max-width:768px) {
+  nav { padding:0 16px; height:48px; }
+  .nav-links { display:none; }
+  .nav-hamburger { display:flex; height:48px; }
+  .nav-progress { padding:0 12px; height:48px; font-size:.58rem; }
+  #hero { grid-template-columns:1fr; min-height:auto; padding-top:48px; }
+  .hero-l { padding:36px 20px; border-right:none; border-bottom:1px solid var(--line); gap:28px; }
+  .hero-name { font-size:clamp(3rem,14vw,5.5rem); white-space:normal; }
+  .hero-r { flex-direction:column; }
+  .hero-photo { padding:24px 20px 20px; }
+  .photo-frame { max-height:220px; aspect-ratio:16/9; }
+  .hero-stats { padding:20px 20px 24px; }
+  .sv-num { font-size:1.6rem; }
+  .sec-hd  { padding:14px 20px; }
+  .sec-body { padding:32px 20px; }
+  .about-grid { grid-template-columns:1fr; }
+  .about-div  { display:none; }
+  .about-l    { padding-right:0; margin-bottom:28px; }
+  .about-r    { padding-left:0; }
+  .sk-i    { padding-left:20px; }
+  .sk-en   { display:none; }
+  .sk-bar-cell { padding-right:20px; width:72px; }
+  .sk-tags { display:none; }
+  /* VFX 2欄 */
+  .vfx-grid { grid-template-columns:repeat(2,1fr); }
+  .vfx-grid > .vfx-card:nth-child(3n) { border-right:1px solid var(--line); }
+  .vfx-grid > .vfx-card:nth-child(2n) { border-right:none; }
+  /* water 2欄 */
+  .vfx-row-4 { grid-template-columns:repeat(2,1fr); }
+  .vfx-row-4 .vfx-card:nth-child(2) { border-right:none; }
+  .vfx-row-4 .vfx-card:nth-child(1),
+  .vfx-row-4 .vfx-card:nth-child(2) { border-bottom:1px solid var(--line); }
+  /* iron man row — 手機維持 2欄 OK */
+  .vfx-row-2 .vfx-card:last-child { border-right:none; }
+  /* cemetery 3格 → 手機改 1欄 */
+  .vfx-row-3 { grid-template-columns:1fr; }
+  .vfx-row-3 .vfx-card { border-right:none; border-bottom:1px solid var(--line); }
+  .vfx-row-3 .vfx-card:last-child { border-bottom:none; }
+  /* works */
+  .works-full { grid-template-columns:1fr; }
+  .wf-card.featured-hero { grid-column:1; }
+  .wf-card.featured-hero .wf-thumb { padding-top:56.25%; }
+  .wf-card:nth-child(2n) { border-right:none; }
+  .wf-info { padding:12px 16px 14px; }
+  .collab-grid { grid-template-columns:1fr; }
+  .c-cell { border-right:none; padding:28px 20px; }
+  .contact-grid { grid-template-columns:1fr; }
+  .ct-l { border-right:none; border-bottom:1px solid var(--line); padding:36px 20px; }
+  .ct-row { padding:16px 20px; grid-template-columns:68px 1fr auto; gap:10px; }
+  footer { padding:14px 20px; flex-direction:column; gap:4px; text-align:center; }
+  .works-filter { top:48px; }
+}
+@media (max-width:480px) {
+  .hero-name { font-size:clamp(2.8rem,16vw,4.5rem); }
+  .f-btn { padding:11px 13px; }
+  .photo-frame { aspect-ratio:4/3; max-height:200px; }
+  .vfx-grid { grid-template-columns:1fr; }
+  .vfx-grid > .vfx-card:nth-child(3n) { border-right:none; }
+  .vfx-row-4 { grid-template-columns:repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+<div id="cur"></div>
+<div id="cur-ring"></div>
+<div id="cur-dot"></div>
+<canvas id="grid-cv"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo"><b>Nathaniel</b></div>
+  <ul class="nav-links">
+    <li><a href="#about">關於</a></li>
+    <li><a href="#skills">技能</a></li>
+    <li><a href="#vfx">特效</a></li>
+    <li><a href="#works">作品</a></li>
+    <li><a href="#contact">聯絡</a></li>
+  </ul>
+  <div class="nav-progress" id="navp">00%</div>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="選單">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="nav-mobile-menu" id="nav-mobile-menu">
+  <a href="#about" class="nav-mobile-link">關於</a>
+  <a href="#skills" class="nav-mobile-link">技能</a>
+  <a href="#vfx" class="nav-mobile-link">特效</a>
+  <a href="#works" class="nav-mobile-link">作品</a>
+  <a href="#contact" class="nav-mobile-link">聯絡</a>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-l">
+    <div class="hero-label">自由接案・影像創作者</div>
+    <div>
+      <h1 class="hero-name">Nathaniel</h1>
+      <p class="hero-zh">胡皓承</p>
+    </div>
+    <div class="hero-bio">
+      <p>臺師大物理系大二在學。從國中起自學剪輯特效，<br>喜歡用<strong>影像說故事</strong></p>
+      <p>中英文皆流利，<strong>歡迎接案合作</strong>。會健身，不喜歡練腿。</p>
+    </div>
+    <div class="hero-meta">
+      <div class="meta-cell"><div class="meta-k">現況 Status</div><div class="meta-v">接案中 Available</div></div>
+      <div class="meta-cell"><div class="meta-k">所在地 Location</div><div class="meta-v">台北 Taipei, TW</div></div>
+      <div class="meta-cell"><div class="meta-k">工具 Tools</div><div class="meta-v">AE · Pr · Houdini · Blender</div></div>
+      <div class="meta-cell"><div class="meta-k">語言 Language</div><div class="meta-v">中文 · English</div></div>
+    </div>
+  </div>
+  <div class="hero-r">
+    <div class="hero-photo">
+      <div class="block-label">個人照片 Profile</div>
+      <div class="photo-frame">
+        <img src="IMG_2008.heic" alt="Nathaniel 胡皓承"
+             onerror="this.style.display='none'; document.getElementById('photo-ph').style.display='flex'">
+        <div class="photo-placeholder" id="photo-ph">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1">
+            <circle cx="16" cy="10" r="5"/><path d="M4 28c0-7 5-12 12-12s12 5 12 12"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div class="hero-stats" id="statsViz">
+      <div class="block-label">數據一覽 Stats</div>
+      <div class="sv-row">
+        <div class="sv-top"><span class="sv-num" data-target="5">0</span><span class="sv-unit">年</span><span class="sv-desc">自學剪輯 / Years of editing</span></div>
+        <div class="sv-track"><div class="sv-fill" data-pct="83"></div></div>
+        <div class="sv-dots" id="dots-years"></div>
+      </div>
+      <div class="sv-row">
+        <div class="sv-top"><span class="sv-num" data-target="4">0</span><span class="sv-unit">項</span><span class="sv-desc">核心工具 / Core tools</span></div>
+        <div class="sv-track"><div class="sv-fill" data-pct="100"></div></div>
+        <div class="sv-dots" id="dots-tools"></div>
+      </div>
+      <div class="sv-row">
+        <div class="sv-top"><span class="sv-num" data-target="2">0</span><span class="sv-unit">種</span><span class="sv-desc">流利語言 / Languages</span></div>
+        <div class="sv-track"><div class="sv-fill" data-pct="100"></div></div>
+        <div class="sv-dots" id="dots-lang"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- I. 關於我 -->
+<div class="sec" id="about">
+  <div class="sec-hd reveal"><span class="sec-rom">I.</span><span class="sec-zh">關於我</span><span class="sec-en">About</span></div>
+  <div class="sec-body">
+    <div class="about-grid reveal">
+      <div class="about-l">
+        <p class="about-p">哈囉，我是 <strong>Nathan 胡皓承</strong>，目前就讀國立臺灣師範大學物理學系大二。</p>
+        <p class="about-p">從國中起自學剪輯，YouTube 長片、Shorts、Reels 全類型都做過。擅長 <strong>After Effects 特效合成</strong>，也玩 <strong>Houdini 模擬</strong> 和 <strong>Blender 3D</strong>。</p>
+        <p class="about-p">曾與 <strong>六指淵 Huber</strong> 合作剪輯 IG Reels，也與 <strong>遐光映畫 XG Studios</strong> 共同製作短影音。曾經翻譯並剪輯國外實況主精華。</p>
+        <p class="about-p">中英文皆流利。</p>
+      </div>
+      <div class="about-div"></div>
+      <div class="about-r">
+        <div class="stat-row"><span class="stat-n">5+</span><div style="text-align:right"><div class="stat-zh">剪輯年數</div><div class="stat-en">Years Self-taught</div></div></div>
+        <div class="stat-row"><span class="stat-n">04</span><div style="text-align:right"><div class="stat-zh">主要創作工具</div><div class="stat-en">Core Tools</div></div></div>
+        <div class="stat-row"><span class="stat-n">02</span><div style="text-align:right"><div class="stat-zh">流利語言</div><div class="stat-en">Languages</div></div></div>
+        <div class="stat-row"><span class="stat-n">∞</span><div style="text-align:right"><div class="stat-zh">創作熱情</div><div class="stat-en">Curiosity</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- II. 技能 -->
+<div class="sec" id="skills">
+  <div class="sec-hd reveal"><span class="sec-rom">II.</span><span class="sec-zh">技能與工具</span><span class="sec-en">Skills &amp; Tools</span></div>
+  <table class="sk-table">
+    <tr class="reveal"><td class="sk-i">01</td><td class="sk-zh">影片剪輯</td><td class="sk-en">Video Editing</td><td class="sk-tags"><span class="sk-tag">Premiere Pro</span><span class="sk-tag">YouTube</span><span class="sk-tag">Reels</span><span class="sk-tag">Shorts</span></td><td class="sk-bar-cell"><div class="sk-track"><div class="sk-fill" data-w="95"></div></div></td></tr>
+    <tr class="reveal"><td class="sk-i">02</td><td class="sk-zh">VFX 特效合成</td><td class="sk-en">VFX Compositing</td><td class="sk-tags"><span class="sk-tag">After Effects</span><span class="sk-tag">Compositing</span><span class="sk-tag">Tracking</span></td><td class="sk-bar-cell"><div class="sk-track"><div class="sk-fill" data-w="88"></div></div></td></tr>
+    <tr class="reveal"><td class="sk-i">03</td><td class="sk-zh">3D 動態模擬</td><td class="sk-en">3D / Simulation</td><td class="sk-tags"><span class="sk-tag">Houdini</span><span class="sk-tag">Blender</span><span class="sk-tag">Simulation</span></td><td class="sk-bar-cell"><div class="sk-track"><div class="sk-fill" data-w="80"></div></div></td></tr>
+    <tr class="reveal"><td class="sk-i">04</td><td class="sk-zh">繪圖</td><td class="sk-en">Illustration</td><td class="sk-tags"><span class="sk-tag">Concept Art</span><span class="sk-tag">Character</span><span class="sk-tag">Illustration</span></td><td class="sk-bar-cell"><div class="sk-track"><div class="sk-fill" data-w="75"></div></div></td></tr>
+    <tr class="reveal"><td class="sk-i">05</td><td class="sk-zh">中英翻譯 / 在地化</td><td class="sk-en">Translation / L10N</td><td class="sk-tags"><span class="sk-tag">EN→ZH-TW</span><span class="sk-tag">Subtitles</span><span class="sk-tag">Localization</span></td><td class="sk-bar-cell"><div class="sk-track"><div class="sk-fill" data-w="92"></div></div></td></tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     III. VFX 特效作品
+     電腦版：滑鼠移入自動播放 GIF（hover 即觸發，無需點擊）
+     手機版：tap / 觸碰即顯示
+     【如何替換 GIF】把 src="xxxx.gif" 換成你的檔名即可
+══════════════════════════════════════════════════════ -->
+<div class="sec" id="vfx">
+  <div class="sec-hd reveal"><span class="sec-rom">III.</span><span class="sec-zh">AE 作品</span><span class="sec-en">VFX · Motion Design</span></div>
+
+  <div class="vfx-grid">
+
+    <!-- ── 1. Explosion ── -->
+    <div class="vfx-group-title reveal">
+      <span class="vfx-group-num">01</span>
+      <span class="vfx-group-name">Explosion</span>
+      <span class="vfx-group-tools">AE</span>
+    </div>
+    <div class="vfx-card reveal" style="grid-column:1/-1;">
+      <div class="vfx-gif" style="padding-top:30%;">
+        <img src="爆炸.gif" alt="Explosion">
+        <span class="vfx-label">VFX</span>
+      </div>
+    </div>
+
+    <!-- ── 2&3. Iron Man Suit Up ── -->
+    <div class="vfx-group-title reveal">
+      <span class="vfx-group-num">02 – 03</span>
+      <span class="vfx-group-name">Iron Man Suit Up</span>
+      <span class="vfx-group-tools">Blender · AE</span>
+    </div>
+    <div class="vfx-row-2 reveal">
+      <div class="vfx-card">
+        <div class="vfx-gif">
+          <img src="ironman breakdown .gif" alt="Iron Man Breakdown">
+          <span class="vfx-label">BREAKDOWN</span>
+        </div>
+      </div>
+      <div class="vfx-card">
+        <div class="vfx-gif">
+          <img src="iron manfinal.gif" alt="Iron Man Final">
+          <span class="vfx-label">FINAL ✦</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 4 5 6. 綠谷出久 vs. 雷神索爾 ── -->
+    <div class="vfx-group-title reveal">
+      <span class="vfx-group-num">04 – 06</span>
+      <span class="vfx-group-name">綠谷出久 vs. 雷神索爾</span>
+      <span class="vfx-group-tools">AE</span>
+    </div>
+    <div class="vfx-card reveal">
+      <div class="vfx-gif">
+        <img src="one for all activate.gif" alt="One For All Activate">
+        <span class="vfx-label">04</span>
+      </div>
+    </div>
+    <div class="vfx-card reveal">
+      <div class="vfx-gif">
+        <img src="mjonir.gif" alt="Mjölnir">
+        <span class="vfx-label">05</span>
+      </div>
+    </div>
+    <div class="vfx-card reveal">
+      <div class="vfx-gif">
+        <img src="dodge.gif" alt="Dodge">
+        <span class="vfx-label">06</span>
+      </div>
+    </div>
+
+    <!-- ── 7. 七彩霓虹燈 ── -->
+    <div class="vfx-group-title reveal">
+      <span class="vfx-group-num">07</span>
+      <span class="vfx-group-name">七彩霓虹燈</span>
+      <span class="vfx-group-tools">AE</span>
+    </div>
+    <div class="vfx-card reveal" style="grid-column:1/-1;">
+      <div class="vfx-gif" style="padding-top:30%;">
+        <img src="kimochi.gif" alt="七彩霓虹燈">
+        <span class="vfx-label">MG</span>
+      </div>
+    </div>
+
+    <!-- ── 8. Breaking Bad Intro Remake ── -->
+    <div class="vfx-group-title reveal">
+      <span class="vfx-group-num">08</span>
+      <span class="vfx-group-name">Breaking Bad Intro Remake</span>
+      <span class="vfx-group-tools">AE</span>
+    </div>
+    <div class="vfx-card reveal" style="grid-column:1/-1;">
+      <div class="vfx-gif" style="padding-top:30%;">
+        <img src="breaking bad.gif" alt="Breaking Bad Intro Remake">
+        <span class="vfx-label">MG</span>
+      </div>
+    </div>
+
+    <!-- ── 9. Logo Replace ── -->
+    <div class="vfx-group-title reveal">
+      <span class="vfx-group-num">09</span>
+      <span class="vfx-group-name">Logo Replace</span>
+      <span class="vfx-group-tools">AE</span>
+    </div>
+    <div class="vfx-card reveal" style="grid-column:1/-1;">
+      <div class="vfx-gif" style="padding-top:30%;">
+        <img src="replace.gif" alt="Logo Replace">
+        <span class="vfx-label">VFX</span>
+      </div>
+    </div>
+
+    <!-- ── 10–13. 打水機 ── -->
+    <div class="vfx-group-title reveal">
+      <span class="vfx-group-num">10 – 13</span>
+      <span class="vfx-group-name">打水機</span>
+      <span class="vfx-group-tools">Houdini · AE</span>
+    </div>
+    <div class="vfx-row-4 reveal">
+      <div class="vfx-card">
+        <div class="vfx-gif">
+          <img src="water01.gif" alt="打水機 01">
+          <span class="vfx-label">WIP 01</span>
+        </div>
+      </div>
+      <div class="vfx-card">
+        <div class="vfx-gif">
+          <img src="water02.gif" alt="打水機 02">
+          <span class="vfx-label">WIP 02</span>
+        </div>
+      </div>
+      <div class="vfx-card">
+        <div class="vfx-gif">
+          <img src="water03.gif" alt="打水機 03">
+          <span class="vfx-label">WIP 03</span>
+        </div>
+      </div>
+      <div class="vfx-card">
+        <div class="vfx-gif">
+          <img src="waterfinal.gif" alt="打水機 Final">
+          <span class="vfx-label">FINAL ✦</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 14–16. 動畫MV Cemetery ── -->
+    <div class="vfx-group-title reveal">
+      <span class="vfx-group-num">14 – 16</span>
+      <span class="vfx-group-name">動畫 MV — Cemetery</span>
+      <span class="vfx-group-tools">AE</span>
+    </div>
+    <div class="vfx-row-3 reveal">
+      <div class="vfx-card">
+        <div class="vfx-gif">
+          <img src="cm01.gif" alt="Cemetery Shot 1">
+          <span class="vfx-label">MV · 14</span>
+        </div>
+      </div>
+      <div class="vfx-card">
+        <div class="vfx-gif">
+          <img src="cm02.gif" alt="Cemetery Shot 2">
+          <span class="vfx-label">MV · 15</span>
+        </div>
+      </div>
+      <div class="vfx-card">
+        <div class="vfx-gif">
+          <img src="cm03.gif" alt="Cemetery Shot 3">
+          <span class="vfx-label">MV · 16</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /vfx-grid -->
+</div>
+
+<!-- IV. 作品集 -->
+<div class="sec" id="works">
+  <div class="sec-hd reveal"><span class="sec-rom">IV.</span><span class="sec-zh">剪輯作品</span><span class="sec-en">Editing Works</span></div>
+
+  <div class="works-filter">
+    <button class="f-btn active" data-f="all"><span class="f-zh">全部</span>All</button>
+    <button class="f-btn" data-f="featured"><span class="f-zh">精選</span>Featured</button>
+    <button class="f-btn" data-f="shorts"><span class="f-zh">短影音</span>Shorts</button>
+    <button class="f-btn" data-f="gaming"><span class="f-zh">遊戲</span>Gaming</button>
+    <button class="f-btn" data-f="art"><span class="f-zh">繪圖</span>Art</button>
+  </div>
+
+  <div class="works-full" id="wg">
+
+    <!-- 精選 01 — 大橫幅 -->
+    <a class="wf-card featured-hero reveal" data-cat="featured" href="https://www.youtube.com/watch?v=LGypy8o9mu0&t=257s" target="_blank">
+      <div class="wf-thumb" style="background-image:url('https://img.youtube.com/vi/LGypy8o9mu0/maxresdefault.jpg');">
+        <span class="wf-label">YouTube</span><span class="wf-emoji">🎬</span>
+        <div class="wf-play"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="23" fill="rgba(240,237,232,.12)" stroke="rgba(240,237,232,.3)" stroke-width="1"/><polygon points="20,15 35,24 20,33" fill="rgba(240,237,232,.9)"/></svg></div>
+        <div class="wf-overlay"><div class="wf-overlay-title">【分科測驗】高中學渣告訴你到底該不該考分科以及如何征服分科測驗</div><div class="wf-overlay-meta">youtube.com · 精選</div></div>
+      </div>
+      <div class="wf-info"><div class="wf-info-l"><div class="wf-num">01</div><div class="wf-title">【分科測驗】高中學渣告訴你到底該不該考分科以及如何征服分科測驗（各考試皆可服用）</div><div class="wf-platform">youtube.com</div></div><span class="wf-arrow">↗</span></div>
+    </a>
+
+    <a class="wf-card reveal" data-cat="featured" href="https://youtu.be/xC7ikgqVdlU?si=Q1bcipwRd0QckkVv" target="_blank">
+      <div class="wf-thumb" style="background-image:url('https://img.youtube.com/vi/xC7ikgqVdlU/maxresdefault.jpg');">
+        <span class="wf-label">YouTube</span><span class="wf-emoji">🎞️</span>
+        <div class="wf-play"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="23" fill="rgba(240,237,232,.12)" stroke="rgba(240,237,232,.3)" stroke-width="1"/><polygon points="20,15 35,24 20,33" fill="rgba(240,237,232,.9)"/></svg></div>
+        <div class="wf-overlay"><div class="wf-overlay-title">壽山高中第12屆畢業微電影 ⟦橘線•♾️⟧</div><div class="wf-overlay-meta">youtube.com · 精選</div></div>
+      </div>
+      <div class="wf-info"><div class="wf-info-l"><div class="wf-num">02</div><div class="wf-title">壽山高中第12屆畢業微電影 ⟦橘線•♾️⟧</div><div class="wf-platform">youtube.com</div></div><span class="wf-arrow">↗</span></div>
+    </a>
+
+    <a class="wf-card reveal" data-cat="featured" href="https://www.youtube.com/watch?v=3OycIe0RXJw&t=627s" target="_blank">
+      <div class="wf-thumb" style="background-image:url('https://img.youtube.com/vi/3OycIe0RXJw/maxresdefault.jpg');">
+        <span class="wf-label">YouTube</span><span class="wf-emoji">🎥</span>
+        <div class="wf-play"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="23" fill="rgba(240,237,232,.12)" stroke="rgba(240,237,232,.3)" stroke-width="1"/><polygon points="20,15 35,24 20,33" fill="rgba(240,237,232,.9)"/></svg></div>
+        <div class="wf-overlay"><div class="wf-overlay-title">【Vlog】青春洋溢的高中畢業旅行！</div><div class="wf-overlay-meta">youtube.com · 精選</div></div>
+      </div>
+      <div class="wf-info"><div class="wf-info-l"><div class="wf-num">03</div><div class="wf-title">【Vlog】青春洋溢的高中畢業旅行！不小心把店家的墨鏡折斷？在沙灘上Breaking也太帥了吧</div><div class="wf-platform">youtube.com</div></div><span class="wf-arrow">↗</span></div>
+    </a>
+
+    <a class="wf-card reveal" data-cat="featured" href="https://youtu.be/-3HSlDcHkEk?si=kwx7fkk0Wes2DBmo" target="_blank">
+      <div class="wf-thumb" style="background-image:url('https://img.youtube.com/vi/-3HSlDcHkEk/maxresdefault.jpg');">
+        <span class="wf-label">YouTube</span><span class="wf-emoji">🔥</span>
+        <div class="wf-play"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="23" fill="rgba(240,237,232,.12)" stroke="rgba(240,237,232,.3)" stroke-width="1"/><polygon points="20,15 35,24 20,33" fill="rgba(240,237,232,.9)"/></svg></div>
+        <div class="wf-overlay"><div class="wf-overlay-title">【國防課報告】火災逃生三步驟不要死掉</div><div class="wf-overlay-meta">youtube.com · 精選</div></div>
+      </div>
+      <div class="wf-info"><div class="wf-info-l"><div class="wf-num">04</div><div class="wf-title">【國防課報告】火災逃生三步驟不要死掉</div><div class="wf-platform">youtube.com</div></div><span class="wf-arrow">↗</span></div>
+    </a>
+
+    <a class="wf-card reveal" data-cat="shorts" href="https://www.instagram.com/reel/DU-_cbvEvF7/" target="_blank">
+      <div class="wf-thumb" style="background-image:url('Screenshot 2026-03-04 at 01.02.00.png');">
+        <span class="wf-label">Instagram</span><span class="wf-emoji">🩳</span>
+        <div class="wf-play"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="23" fill="rgba(240,237,232,.12)" stroke="rgba(240,237,232,.3)" stroke-width="1"/><polygon points="20,15 35,24 20,33" fill="rgba(240,237,232,.9)"/></svg></div>
+        <div class="wf-overlay"><div class="wf-overlay-title">短影音剪輯 Reel</div><div class="wf-overlay-meta">instagram.com · 短影音</div></div>
+      </div>
+      <div class="wf-info"><div class="wf-info-l"><div class="wf-num">05</div><div class="wf-title">短影音剪輯 Reel</div><div class="wf-platform">instagram.com</div></div><span class="wf-arrow">↗</span></div>
+    </a>
+
+    <a class="wf-card reveal" data-cat="shorts" href="https://www.instagram.com/huber0203/reel/C7tpetYyjKN/" target="_blank">
+      <div class="wf-thumb" style="background-image:url('Screenshot 2026-03-04 at 01.01.07.png');">
+        <span class="wf-label">六指淵 Huber</span><span class="wf-emoji">🎯</span>
+        <div class="wf-play"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="23" fill="rgba(240,237,232,.12)" stroke="rgba(240,237,232,.3)" stroke-width="1"/><polygon points="20,15 35,24 20,33" fill="rgba(240,237,232,.9)"/></svg></div>
+        <div class="wf-overlay"><div class="wf-overlay-title">六指淵 Huber — Reel</div><div class="wf-overlay-meta">instagram.com · 短影音</div></div>
+      </div>
+      <div class="wf-info"><div class="wf-info-l"><div class="wf-num">06</div><div class="wf-title">六指淵 Huber — Reel</div><div class="wf-platform">instagram.com</div></div><span class="wf-arrow">↗</span></div>
+    </a>
+
+    <a class="wf-card reveal" data-cat="gaming" href="https://youtu.be/xHDbhcW3wIo?si=yVwDmYnYfIi0fBjR" target="_blank">
+      <div class="wf-thumb" style="background-image:url('https://img.youtube.com/vi/xHDbhcW3wIo/maxresdefault.jpg');">
+        <span class="wf-label">YouTube</span><span class="wf-emoji">🎮</span>
+        <div class="wf-play"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="23" fill="rgba(240,237,232,.12)" stroke="rgba(240,237,232,.3)" stroke-width="1"/><polygon points="20,15 35,24 20,33" fill="rgba(240,237,232,.9)"/></svg></div>
+        <div class="wf-overlay"><div class="wf-overlay-title">最好笑的撿垃圾精華</div><div class="wf-overlay-meta">youtube.com · 遊戲</div></div>
+      </div>
+      <div class="wf-info"><div class="wf-info-l"><div class="wf-num">07</div><div class="wf-title">最好笑的撿垃圾精華</div><div class="wf-platform">youtube.com</div></div><span class="wf-arrow">↗</span></div>
+    </a>
+
+    <a class="wf-card reveal" data-cat="gaming" href="https://youtu.be/XEPs0URozBo" target="_blank">
+      <div class="wf-thumb" style="background-image:url('https://img.youtube.com/vi/XEPs0URozBo/maxresdefault.jpg');">
+        <span class="wf-label">YouTube</span><span class="wf-emoji">🕹️</span>
+        <div class="wf-play"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="23" fill="rgba(240,237,232,.12)" stroke="rgba(240,237,232,.3)" stroke-width="1"/><polygon points="20,15 35,24 20,33" fill="rgba(240,237,232,.9)"/></svg></div>
+        <div class="wf-overlay"><div class="wf-overlay-title">【The Forest】諧咖野人部落 ep.01</div><div class="wf-overlay-meta">youtube.com · 遊戲</div></div>
+      </div>
+      <div class="wf-info"><div class="wf-info-l"><div class="wf-num">08</div><div class="wf-title">【The Forest】諧咖野人部落 ep.01</div><div class="wf-platform">youtube.com</div></div><span class="wf-arrow">↗</span></div>
+    </a>
+
+    <a class="wf-card reveal" data-cat="gaming" href="https://youtu.be/rUacy1k4lJ8?si=eLLMgOIK5uHL5v-i" target="_blank">
+      <div class="wf-thumb" style="background-image:url('https://img.youtube.com/vi/rUacy1k4lJ8/maxresdefault.jpg');">
+        <span class="wf-label">YouTube</span><span class="wf-emoji">⛏️</span>
+        <div class="wf-play"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="23" fill="rgba(240,237,232,.12)" stroke="rgba(240,237,232,.3)" stroke-width="1"/><polygon points="20,15 35,24 20,33" fill="rgba(240,237,232,.9)"/></svg></div>
+        <div class="wf-overlay"><div class="wf-overlay-title">【Minecraft】通關挑戰 Ep.01</div><div class="wf-overlay-meta">youtube.com · 遊戲</div></div>
+      </div>
+      <div class="wf-info"><div class="wf-info-l"><div class="wf-num">09</div><div class="wf-title">【Minecraft】通關挑戰 Ep.01</div><div class="wf-platform">youtube.com</div></div><span class="wf-arrow">↗</span></div>
+    </a>
+
+    <div class="wf-card reveal" data-cat="art"><div class="wf-thumb" style="background-image:url('174DD1D3-1450-41A4-AA59-A495005C83DF.jpg'); background-position:center top;"></div><div class="wf-info"><div class="wf-info-l"><div class="wf-num">10</div><div class="wf-title">Billie</div><div class="wf-platform">illustration</div></div></div></div>
+    <div class="wf-card reveal" data-cat="art"><div class="wf-thumb" style="background-image:url('252590C6-EFE4-49EF-AA92-28D4B7CFD9E1.jpg'); background-position:center top;"></div><div class="wf-info"><div class="wf-info-l"><div class="wf-num">11</div><div class="wf-title">Patrick</div><div class="wf-platform">illustration</div></div></div></div>
+    <div class="wf-card reveal" data-cat="art"><div class="wf-thumb" style="background-image:url('A0281A89-3221-48F0-BD8B-AD60582AA0A2.jpg'); background-position:center top;"></div><div class="wf-info"><div class="wf-info-l"><div class="wf-num">12</div><div class="wf-title">Ms. Dinosaur Bones</div><div class="wf-platform">illustration</div></div></div></div>
+    <div class="wf-card reveal" data-cat="art"><div class="wf-thumb" style="background-image:url('3ABADEE9-B9CF-4D12-9360-F0FE4F431153.jpg'); background-position:center top;"></div><div class="wf-info"><div class="wf-info-l"><div class="wf-num">13</div><div class="wf-title">Superman</div><div class="wf-platform">illustration</div></div></div></div>
+    <div class="wf-card reveal" data-cat="art"><div class="wf-thumb" style="background-image:url('D80AFFFC-B3FF-481D-980F-3D0F095E980E.jpg'); background-position:center top;"></div><div class="wf-info"><div class="wf-info-l"><div class="wf-num">14</div><div class="wf-title">Batman</div><div class="wf-platform">illustration</div></div></div></div>
+    <div class="wf-card reveal" data-cat="art"><div class="wf-thumb" style="background-image:url('78D4B3E2-DF26-4DC6-B59E-E533C8DA4543.jpg'); background-position:center top;"></div><div class="wf-info"><div class="wf-info-l"><div class="wf-num">15</div><div class="wf-title">Goddess of Flame</div><div class="wf-platform">illustration</div></div></div></div>
+
+  </div>
+</div>
+
+<!-- V. 合作對象 -->
+<div class="sec">
+  <div class="sec-hd reveal"><span class="sec-rom">V.</span><span class="sec-zh">合作對象</span><span class="sec-en">Collaborations</span></div>
+  <div class="collab-grid">
+    <div class="c-cell reveal"><div class="c-idx">C — 01</div><div class="c-name">六指淵 Huber</div><div class="c-sub">@huber0203</div><div class="c-desc">台灣知名 YouTuber / 創作者。合作剪輯 IG Reels 及 TikTok 短影音，負責節奏設計與視覺風格統一。</div></div>
+    <div class="c-cell reveal"><div class="c-idx">C — 02</div><div class="c-name">遐光映畫</div><div class="c-sub">XG Studios</div><div class="c-desc">專業影像製作工作室。合作短影音剪輯，從素材整理到最終輸出全流程參與。</div></div>
+  </div>
+</div>
+
+<!-- VI. 聯絡 -->
+<div class="sec" id="contact">
+  <div class="sec-hd reveal"><span class="sec-rom">VI.</span><span class="sec-zh">聯絡</span><span class="sec-en">Contact</span></div>
+  <div class="contact-grid">
+    <div class="ct-l reveal">
+      <div class="ct-big">一起做點<br>很酷的東西</div>
+      <p class="ct-sub">歡迎接洽剪輯、VFX 特效、繪圖等各類合作。<br>中英皆可溝通，任何有趣的提案都歡迎。</p>
+    </div>
+    <div class="ct-r">
+      <a href="/cdn-cgi/l/email-protection#bad4dbced2dbd4d3dfd6d9d5d5ca89948b8e8b8f83faddd7dbd3d694d9d5d7" class="ct-row reveal"><span class="ct-platform">電子郵件<br>Email</span><span class="ct-handle"><span class="__cf_email__" data-cfemail="bfd1decbd7ded1d6dad3dcd0d0cf8c918e8b8e8a86ffd8d2ded6d391dcd0d2">[email&#160;protected]</span></span><span class="ct-arrow">↗</span></a>
+      <a href="https://www.instagram.com/neil_e_mc2" target="_blank" class="ct-row reveal"><span class="ct-platform">Instagram</span><span class="ct-handle">@neil_e_mc2</span><span class="ct-arrow">↗</span></a>
+      <a href="https://www.youtube.com/@nathaniel3.1415" target="_blank" class="ct-row reveal"><span class="ct-platform">YouTube</span><span class="ct-handle">@nathaniel3.1415</span><span class="ct-arrow">↗</span></a>
+      <div class="ct-row reveal" style="cursor:default"><span class="ct-platform">Discord</span><span class="ct-handle">nathan_physics</span><span class="ct-arrow" style="opacity:.3">—</span></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span class="ft">© 2025 胡皓承 Nathaniel</span>
+  <span class="ft">TAIPEI, TAIWAN</span>
+</footer>
+
+<!-- Lightbox -->
+<div id="lb" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(10,10,10,.92);backdrop-filter:blur(12px);align-items:center;justify-content:center;cursor:zoom-out;">
+  <img id="lb-img" style="max-width:90vw;max-height:90vh;object-fit:contain;border:1px solid rgba(240,237,232,.12);">
+</div>
+
+<script>
+/* ── 游標 ── */
+const cur=document.getElementById('cur'),curRing=document.getElementById('cur-ring'),curDot=document.getElementById('cur-dot');
+let mx=innerWidth/2,my=innerHeight/2,rx=mx,ry=my,dx=mx,dy=my,isHov=false;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+document.addEventListener('mousedown',()=>document.body.classList.add('clicking'));
+document.addEventListener('mouseup',()=>document.body.classList.remove('clicking'));
+document.querySelectorAll('a,button,.wf-card,.vfx-card,.c-cell,.ct-row,tr').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{isHov=true;document.body.classList.add('hov');});
+  el.addEventListener('mouseleave',()=>{isHov=false;document.body.classList.remove('hov');});
+});
+(function tick(){
+  cur.style.left=mx+'px';cur.style.top=my+'px';
+  rx+=(mx-rx)*.13;ry+=(my-ry)*.13;curRing.style.left=rx+'px';curRing.style.top=ry+'px';
+  dx+=(mx-dx)*.07;dy+=(my-dy)*.07;curDot.style.left=dx+'px';curDot.style.top=dy+'px';
+  requestAnimationFrame(tick);
+})();
+
+/* ── Glow + Trail + Grid ── */
+const gc2=document.createElement('canvas');gc2.style.cssText='position:fixed;inset:0;z-index:1;pointer-events:none;';document.body.appendChild(gc2);
+const ctx2=gc2.getContext('2d');let gW=0,gH=0;
+function rG(){gc2.width=gW=innerWidth;gc2.height=gH=innerHeight;}rG();window.addEventListener('resize',rG);
+const TRAIL=[];document.addEventListener('mousemove',e=>{TRAIL.push({x:e.clientX,y:e.clientY,age:0});if(TRAIL.length>20)TRAIL.shift();});
+(function tG(){
+  ctx2.clearRect(0,0,gW,gH);
+  const r=isHov?120:75,g=ctx2.createRadialGradient(mx,my,0,mx,my,r);
+  g.addColorStop(0,'rgba(240,237,232,.055)');g.addColorStop(1,'rgba(240,237,232,0)');
+  ctx2.fillStyle=g;ctx2.fillRect(0,0,gW,gH);
+  ctx2.strokeStyle='rgba(240,237,232,.055)';ctx2.lineWidth=1;
+  ctx2.beginPath();ctx2.moveTo(0,my);ctx2.lineTo(gW,my);ctx2.stroke();
+  ctx2.beginPath();ctx2.moveTo(mx,0);ctx2.lineTo(mx,gH);ctx2.stroke();
+  TRAIL.forEach((p,i)=>{p.age++;const a=Math.max(0,.2*(1-p.age/20)*(i/20));ctx2.beginPath();ctx2.arc(p.x,p.y,1.8,0,Math.PI*2);ctx2.fillStyle='rgba(240,237,232,'+a+')';ctx2.fill();});
+  const GS=60,GR=150,sx=Math.floor((mx-GR)/GS)*GS,sy=Math.floor((my-GR)/GS)*GS;
+  for(let gx=sx;gx<=mx+GR;gx+=GS)for(let gy=sy;gy<=my+GR;gy+=GS){const d=Math.sqrt((gx-mx)**2+(gy-my)**2);if(d<GR){ctx2.beginPath();ctx2.arc(gx,gy,1.5,0,Math.PI*2);ctx2.fillStyle='rgba(240,237,232,'+(1-d/GR)*.55+')';ctx2.fill();}}
+  requestAnimationFrame(tG);
+})();
+const gc=document.getElementById('grid-cv'),gx=gc.getContext('2d');
+function dG(){gc.width=innerWidth;gc.height=innerHeight;gx.strokeStyle='rgba(240,237,232,.025)';gx.lineWidth=1;for(let x=0;x<=gc.width;x+=60){gx.beginPath();gx.moveTo(x,0);gx.lineTo(x,gc.height);gx.stroke();}for(let y=0;y<=gc.height;y+=60){gx.beginPath();gx.moveTo(0,y);gx.lineTo(gc.width,y);gx.stroke();}}
+dG();window.addEventListener('resize',dG);
+
+/* ── Scroll reveal ── */
+const obs=new IntersectionObserver(entries=>{entries.forEach((e,i)=>{if(e.isIntersecting)setTimeout(()=>e.target.classList.add('visible'),i*55);});},{threshold:.05});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+/* ── Nav 進度 ── */
+window.addEventListener('scroll',()=>{const p=Math.round(scrollY/(document.body.scrollHeight-innerHeight)*100);document.getElementById('navp').textContent=String(p).padStart(2,'0')+'%';});
+
+/* ── 作品篩選 ── */
+document.querySelectorAll('.f-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const f=btn.dataset.f;let idx=1;
+    document.querySelectorAll('.wf-card').forEach(c=>{
+      const show=f==='all'||c.dataset.cat===f;
+      c.classList.toggle('hidden',!show);
+      if(show){const n=c.querySelector('.wf-num');if(n)n.textContent=String(idx++).padStart(2,'0');}
+    });
+    document.querySelectorAll('.featured-hero').forEach(c=>{
+      c.style.gridColumn=(!c.classList.contains('hidden')&&(f==='all'||f==='featured'))?'1/-1':'';
+    });
+  });
+});
+
+/* ── 技能進度條 ── */
+const bO=new IntersectionObserver(entries=>{entries.forEach(e=>{if(!e.isIntersecting)return;e.target.querySelectorAll('.sk-fill').forEach(b=>{b.style.width=b.dataset.w+'%';});bO.unobserve(e.target);});},{threshold:.2});
+const skt=document.querySelector('.sk-table');if(skt)bO.observe(skt);
+
+/* ── 數據視覺化 ── */
+const STATS=[
+  {numEl:document.querySelector('[data-target="5"]'),dotsEl:document.getElementById('dots-years'),target:5,max:6,suffix:'+'},
+  {numEl:document.querySelector('[data-target="4"]'),dotsEl:document.getElementById('dots-tools'),target:4,max:4,suffix:''},
+  {numEl:document.querySelector('[data-target="2"]'),dotsEl:document.getElementById('dots-lang'), target:2,max:4,suffix:''},
+];
+STATS.forEach(s=>{for(let i=0;i<s.max;i++){const d=document.createElement('div');d.className='sv-dot'+(i<s.target?' on':'');s.dotsEl.appendChild(d);}});
+const vO=new IntersectionObserver(entries=>{entries.forEach(e=>{if(!e.isIntersecting)return;e.target.querySelectorAll('.sv-fill').forEach(b=>setTimeout(()=>{b.style.width=b.dataset.pct+'%';},150));STATS.forEach((s,i)=>{let c=0;const t=setInterval(()=>{c=Math.min(c+1,s.target);s.numEl.textContent=c+(c>=s.target?s.suffix:'');if(c>=s.target)clearInterval(t);},80+i*25);});vO.unobserve(e.target);});},{threshold:.35});
+const viz=document.getElementById('statsViz');if(viz)vO.observe(viz);
+
+/* ── 漢堡選單 ── */
+const hb=document.getElementById('nav-hamburger'),mm=document.getElementById('nav-mobile-menu');
+if(hb&&mm){hb.addEventListener('click',()=>document.body.classList.toggle('menu-open'));document.querySelectorAll('.nav-mobile-link').forEach(l=>l.addEventListener('click',()=>document.body.classList.remove('menu-open')));}
+
+/* ── 插圖燈箱 ── */
+const lb=document.getElementById('lb'),lbImg=document.getElementById('lb-img');
+document.querySelectorAll('.wf-card[data-cat="art"]').forEach(card=>{
+  card.style.cursor='zoom-in';
+  card.addEventListener('click',()=>{
+    const bg=card.querySelector('.wf-thumb').style.backgroundImage;
+    const url=bg.replace(/^url\(["']?/,'').replace(/["']?\)$/,'');
+    if(!url)return;lbImg.src=url;lb.style.display='flex';
+  });
+});
+lb.addEventListener('click',()=>{lb.style.display='none';});
+</script>
+</body>
+</html>
